@@ -1,0 +1,589 @@
+메모
+
+
+
+
+
+엑셀 파일 한번만 읽어와서 2차원 배열로 필요데이터관리
+
+
+
+
+
+
+
+
+
+
+
+이미지 분석내용
+ToJson(this.RequestContent.Content).output[0].content[0].text
+
+분석내용
+ToJson(this.RequestContent.Content).output[0].content[0].text.split('\n')[1]
+"analysis": "이미지에는 푸른 바다와 검은 화산암, 그리고 흰 모래 해변이 보인다. 해변 뒤에는 돌담과 푸른 풀이 우거진 언덕이 있으며, 하늘은 맑고 푸르다. 전경에는 짙은 색의 바위가 바다와 맞닿아 있어 해안선을 따라 이어진다.",
+ToJson(this.RequestContent.Content).output[0].content[0].text.split('\n')[1].replace('  "이미지 전체 분석 내용": ','')
+요약
+ToJson(this.RequestContent.Content).output[0].content[0].text.split('\n')[2].replace('  ','')
+ToJson(this.RequestContent.Content).output[0].content[0].text.split('\n')[3].replace('  ','')
+ToJson(this.RequestContent.Content).output[0].content[0].text.split('\n')[4].replace('  ','')
+
+*** 미니1 주의사항***
+
+api키 파일로 관리해서 사용할때 불러와서 변수에 할당 후 사용
+
+이미지 생성이 안됬을경우 예외처리
+
+하나의 이미지 생성후 메일보내기 
+
+
+
+시작
+
+0.폴더 및 파일 정리
+
+1. 요청사항 불러오기
+ 1)이미지 링크 불러오기
+ 2)이미지 생성 요청 불러오기
+
+반복문 시작 (이미지 링크 배열 크기만큼 반복)
+2. 이미지 분석
+
+반복문 시작 (생성 요청 사항 배열 크기만큼 반복)
+3. 이미지 생성
+
+4. 메일 전송
+
+끝
+
+
+******************************************SMTP SendMail************************************************************************
+HostName
+ex) smtp.naver.com , smtp.gmail.com
+
+Port
+navermail, Gmail 모두 587으로 변경
+
+ID
+이메일전체 or @앞쪽
+
+Password
+앱 비밀번호 입력
+
+비밀번호 생성하는법
+- 구글
+-- 로그인 -> 프로필 -> 보안및로그인 -> 2단계 인증 -> https://support.google.com/accounts/answer/185833?hl=ko접속
+    -> 앱 비밀번호 만들기 및 관리하기 링크접속 -> 앱 이름설정
+    -> gmail접속 설정-> 모든설정보기 -> 전달 및 POP/IMAP -> 모든메일에 POP사용하기 활성화 -> 변경사항 저장
+
+-네
+
+
+Use SSL
+무조건 활성화하기
+
+Sender
+발신자 메일 주소
+ID에 입력한것과 동일
+메일주소 전부 입력 @뒤까지
+
+Receivers
+수신자 메일주소입력
+
+CCs, BCCs
+참조자, 비밀참조자(받는사람 모르게 공유)
+없는경우 입력x or ''
+
+Subject, Body
+메일제목, 메일 내용
+
+Atteachements
+첨부파일 경로 입력
+여러개 입력시 ';' 으로 구분
+ex) 파일1경로; 파일2경로; 파일3경로
+
+******************************************API호출************************************************************************
+
+Create Image
+
+https://platform.openai.com/docs/api-reference/images/create
+
+dall-e-3 : 한국어 인식 잘되는 이미지 생성 모델
+
+//생성된 이미지 url 출력
+ToJson(출력결과변수.Content).data[0].url
+
+ // URL
+curl https://api.openai.com/v1/images/generations \
+  // ContentType
+  -H "Content-Type: application/json" \                
+  // API key
+  -H "Authorization: Bearer $OPENAI_API_KEY" \      
+  // Body
+ '{                            
+    // 모델                              
+    "model": "gpt-image-1.5",
+    // 프롬프트
+    "prompt": "A cute baby sea otter",
+    // 장수
+    "n": 1,
+    // 사이즈
+    "size": "1024x1024"
+  }'
+
+
+Input Image
+
+https://platform.openai.com/docs/api-reference/responses/create?lang=curl
+
+호출할 URL :  https://api.openai.com/v1/responses
+
+
+호출방식 : post
+
+contentType : application/json
+
+body
+// input Image 지원 형식  [png, jpeg, jpg, webp, gif(움직이지 않아야 함)] (png, jpeg, jpg)권장
+'{
+    "model": "gpt-4.1",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {"type": "input_text", "text": "what is in this image?"},
+          {
+            "type": "input_image",
+            "image_url": "https://cdn.dailyvet.co.kr/wp-content/uploads/2024/05/15231647/20240515ceva_experts4.jpg"
+          }
+        ]
+      }
+    ]
+  }'
+
+
+
+
+******************************************발표************************************************************************
+
+글꼴 통일, 애니메이션x, 넘버링 맞춰서 설명
+
+
+
+******************************************input 오류 처리************************************************************************
+//조회 가능한 브랜드
+현대, 기아, 제네시스, 쉐보레,KGM, 르노코리아
+BMW, 벤츠 ,아우디 ,테슬라 ,캐딜락 ,마세라티 ,BYD ,동풍 ,루시드 ,볼보 ,폭스바겐 ,토요타 ,렉서스 ,
+링컨 ,GMC ,로터스 ,리비안 ,코닉세그 ,폴스타 ,포르쉐 ,포드 ,혼다 ,벤틀리 ,롤스로이스 ,애스턴마틴 ,
+맥라렌 ,빈패스트 ,지프 ,미니 ,랜드로버 ,푸조 ,페라리 ,람보르기니 ,이스즈 ,피스커 ,이네오스
+
+o_arr1_BrandList에서 조회가능한 브랜드가 아닌 값 발견 시 
+messageBox에서 'o_arr1_Brandlist[i]'는 없는 브랜드입니다 출력 후
+다시 inputbox로 입력 받기
+
+//조회기간 (올해-3) <조회년도< (올해+1)
+dowhile(year >올해년도 && year < 올해년도-2) && (month>12 && month < 1)
+ inputBox로 입력받기
+ // [0000년,00월]
+ arr.split(' ') 
+ // 년도를 int로 형변환
+ year = parseInt(arr[0].replace('년',''))
+
+//          202300<조회기간(yyyyMM)<202512(현재날짜) && 0<조회기간(MM)<13
+
+// => 202300 < (inputYear + inputMonth) < (year + month)
+    // && 0 < inputMonth <13
+// '년'을 기준으로 나누기 ['xxxx',' xx월']
+    this.o_arr1_Date = this.str_Input_Date.split('년');
+    // ['xxxx년']
+    this.o_arr1_Date[0] = this.o_arr1_Date[0] + '년';
+    //공백이 있으면 제거
+    this.o_arr1_Date[1] = this.o_arr1_Date[1].replace(' ','');
+    if(this.o_arr1_Date[1].length == 2){
+        this.o_arr1_Date[1] = '0' + this.o_arr1_Date[1];
+    }
+
+
+********************************미니2**************************************************************************************
+
+1. ppt 슬라이드 하단 그림자 지우기
+2. 문장 안짤리게 줄바꿈 or 글자간격 조절
+3. 세부사항 간단하게 변경
+
+
+
+
+T1. 브랜드명 및 조회기간 설정
+  브랜드명list = (현대, 기아, 제네시스, 쉐보레, KGM, 르노코리아)
+  추가 브랜드명list = []
+  inputBox 브랜드명 
+  input ==> ''
+    1>>브랜드명list(현대, 기아, 제네시스, 쉐보레, KGM, 르노코리아)
+  input ==> '입력값,입력값,입력값' 
+    1>> 변수 = '입력값,입력값,입력값' 
+    2>> 변수.split(',');
+    3>> 변수.length 만큼 반복 브랜드명list.push(변수[i]);
+  inputBox 조회기간
+  input == ''
+    1>> 조회기간 == '기본값'
+  input =='조회기간'
+    1>> 조회기간 == '입력값'
+
+브랜드명리스트output
+조회기간output
+
+반복문 시작 (브랜드명 리스트만큼 반복)
+T2. 조회조건 검색
+ if then{
+   다나와 자동차 접속
+   크롬PID 변수 생성 (Global)
+   자동차백과 클릭 (크롬클릭)
+   판매실적 클릭 (크롬클릭)
+   브랜드별 클릭 (크롬클릭)
+ }
+   브랜드클릭 (크롬클릭)
+   -> xPath :  '//*[@id="finder_newcar"]/div[1]/div[1]/ul/li/button/span[contains(.,\''+ this.o_BrandList[i] +'\')']'
+     현대
+     //*[@id="finder_newcar"]/div[1]/div[1]/ul/li[1]/button/span
+    '//div[@id=\'finder_newcar\']/div[1]/div[1]/ul/li/button/span[contains(.,\' '+this.i_arr1_BrandList[this.i_Index]+'\')]'
+     기아
+     //*[@id="finder_newcar"]/div[1]/div[1]/ul/li[2]/button/span
+     '//[@id=\'finder_newcar\']/div[1]/div[2]/ul/li[1]/button/span'
+
+T3 이미지 추출 및 저장
+f12입력 ctrl+f recordBrand
+
+저장된 경로 Global.str_FolderPath + 'Temp\\'
+저장된 이름 'auto.danawa.com_auto__Work=record&Tab=Grand&Brand=303&Month=2023-03-00&MonthTo='
+
+****temp폴더에 파일리스트 읽어와서 바꾸기****
+
+this.arr1_FileList = 파일리스트
+// ToJson 처리
+this.arr1_FileList = ToJson(this.arr1_FileList);
+
+// 변수초기화
+this.arr1_ImageList = [];
+
+// 'danawa'를 포함한 배열만 리턴
+this.arr1_ImageList = this.arr1_FileList.filter(e => e.includes('danawa'));
+
+// 1번 누적판매량
+// 2번 그래프
+
+//저장된 이미지 찾기
+for(i = 0; i < this.arr1_FileList.length' i++){
+	if(this.arr1_FileList.includes('danawa')){	
+	}
+}
+
+저장할 파일명 : “브랜드명yyyy년 MM월 그래프.png
+=> brandList[i] + ' ' + Date[0] + ' ' + Date[1] + ' 그래프.png'
+output으로 내보내서 사용
+저장할 파일명 : “브랜드명 yyyy년 MM월 누적판매량.png
+=> brandList[i] + ' ' + Date[0] + ' ' + Date[1] + ' 누적판매량.png'
+output으로 내보내서 사용
+
+
+T4 데이터 추출
+
+순위 모델  판매량 점유율 전월대비 전년대비
+[i][1] [i][0], [i][4]    [i][5],   [i][6],     [i][7]
+
+
+
+마지막에 브랜드 클릭 한번더
+// this.i_arr1_BrandList[this.i_Index] => 브랜드명 
+//this.i_arr1_Date[0] => 조회기간(년도)
+//this.i_arr1_Date[1] => 조회기간(월)
+
+타이틀 = this.i_arr1_BrandList[this.i_Index] + '  ' + this.i_arr1_Date[0] +' ' +this.i_arr1_Date[1] +' 판매실적' 
+브랜드명 = this.i_arr1_BrandList[this.i_Index] + '  ' //(현대 )
+조회기간 = this.i_arr1_Date[0] +' ' +this.i_arr1_Date[1] //(2000년 00월)
++' 판매실적'
+
+// 데이터 읽어오기 E4부터 F
+'E4' +':F' + (this.i_arr2_ResultData.length+3)
+// 색 바꾸기
+'E4' +':F' + (this.i_arr2_ResultData.length+3) 전부 빨간색으로 폰트색상 변경
+▼ 배열 위치 찾기
+//해당 배열 폰트색상 파란색으로 변경 
+//[0][i] => 'E' + (i+4)
+//[1][i] => 'F' + (i+4)
+
+(this.arr2_blue[this.i][0] +4) -> 열 위치 반환
+this.arr2_blue[this.i][1] -> E,F 위치 반환
+
+(▼ 배열 위치)
+=> [[7, 1], [9, 0], [11, 0], [11, 1], [14, 0], [14, 1], [15, 0], [16, 1], [17, 1], [18, 0], [19, 0], [20, 1], [21, 0], [21, 1]]
+
+모든테두리 
+keyinput alt + h + b + a
+
+이미지삽입
+keyinput alt + n + p + d
+
+T5 엑셀 작성
+****이미지파일 붙여넣기**** 부터시작
+경로 클릭
+경로 : 'C:\RPA\'+ Bot.ProjectName + '\Input'
+파일이름 : this.i_arr1_BrandList[this.i_Index] + ' ' + this.i_arr1_Date[0] + ' ' + this.i_arr1_Date[1] + ' 그래프.png'
+	  this.i_arr1_BrandList[this.i_Index] + ' ' + this.i_arr1_Date[0] + ' ' + this.i_arr1_Date[1] + ' 누적판매량.png'
+	  
+'C:\RPA\제조사별판매실적조회\Input' + this.i_arr1_BrandList[this.i_Index] + ' ' + this.i_arr1_Date[0] + ' ' + this.i_arr1_Date[1] + ' 그래프.png'
+
+저장
+경로 : Global.str_FolderPath + 'Output\\'
+// Global.str_FileName = '제조사별판매실적조회(Template).xlsx';
+파일 이름 : this.i_arr1_BrandList[this.i_Index] + ' ' + this.i_arr1_Date[0] +' ' +this.i_arr1_Date[1] + ' 판매실적.xlsx';
+
+
+
+
+
+폰트 통일
+같은 영역 글자 크기 통일
+----------------------------------------------------- 변수명 ------------------------------------------------------------------------
+
+
+RawData 가공전 데이터
+
+----------------------------------------------------- checklist ------------------------------------------------------------------------
+chromeopen 할때 output으로 PID변수 만들어서 할당하기
+
+추출된 데이터 ToJson 처리 되었는지
+
+----------------------------------------------------- VLOOKUP ------------------------------------------------------------------------
+'VLOOKUP( 찾을값,참조범위,열번호,[일치옵션])'
+찾을값 == 찾고싶은값
+참조범위 == 찾고싶은값을 찾을 범위
+열번호 ==일치시 가져올 참조범위의 열 번호
+[일치옵션] => TRUE(유사일치) FALSE(완벽일치)
+ex)
+'=VLOOKUP( C' + (this.i +2) + ', K:M ,3 ,FALSE)'
+C열의 (this.i+2)의 값을 K~M열에서 찾아서 3번째열(M)의 데이터를 가져옴 (완벽하게 일치할시)
+참조범위 => (K,L,M) 열번호 K=1, L=2, M=3
+this.i = 0일때
+=> '=VLOOKUP(사우디아라비아, K:M ,외화 ,FALSE)'
+
+----------------------------------------------------- Select ComboBox ------------------------------------------------------------------------
+
+Value 끄기  --> comboBox 초기값인 value를 찾기때문에 comboBox값이 바뀌면 에러가 나옴
+----------------------------------------------------- contains ------------------------------------------------------------------------
+contains(.,\'포함시킬단어\')
+contains(.,\' '+this.변수이름+' \')
+Chromeclick - ExecuteQuery (경로지정)s
+변경되는 부분에 삽입
+ex) 
+'//div[@id=\'lnb\']/div[1]/div/div[1]/div/div[1]/div[1]/a'
+ㄴ> '//div[@id=\'lnb\']/div[1]/div/div[1]/div/div[1]/div/a[contain// 추출한 데이터 ToJson처리
+this.arr1_Exchange_Data = ToJson(this.arr1_Exchange_Data);
+'//div[@id=\'cmtrBlncTpcdBox\']/ul/li/label[contains(.,\''+ this.i_str_SearchItem +'\')']' // 포함시킬 단어가 변수인경우
+
+
+this.arr1_Exchange_Data.splice('10','2');    
+
+//국가명 변수
+nation = [];
+//환율 변수
+exchange = [];
+// 통화부호 변수
+symbol = [];
+
+// 임시 배열변수
+data = [];
+data2 = [];
+
+for(i = 0; i < (this.arr1_Exchange_Data.length / 2); i++){    
+    //this.arr1_Exchange_Data[짝수] = ['CFA BCEAO 프랑']
+    //this.arr1_Exchange_Data[짝수] = ['홍콩 달러']
+    data2 = this.arr1_Exchange_Data[i*2].replace('\n', ' ').split(' ');
+    //data2 = ['CFA','BCEAO','프랑']
+    //data2 = ['홍콩','달러']
+    data2.pop(); // 배열 맨뒤에 날리고
+    if(data2.length > 2){
+        for(j = 0; j > data2.length; j++){
+            nation.push(data2[j]);
+        }
+    }else{
+        nation.push(data2);
+    }
+    
+    //nation.push(data2.shift()); //nation까지는 배열에 잘 담김
+    data = this.arr1_Exchange_Data[((i+1)*2 -1)].replace('\n', ' ').split('\n');
+    exchange.push(data[0].split(' ')[0]);
+    symbol.push(data[0].split(' ')[1]);s
+    this.arr2_Exchange_Result_Data.push([nation[i],exchange[i],symbol[i]]);
+}
+
+
+/*
+for(i = 0; i < (this.arr1_Exchange_Data.length / 2); i++){    
+    data2 = this.arr1_Exchange_Data[i*2].replace('\n','').split(' '); //국가명 추출후 nation배열에 담기
+    nation.push(data2.shift());
+    
+    data = this.arr1_Exchange_Data[((i+1)*2 -1)].replace('\n','').split('\n'); //홀수 1~51
+    exchange.push(data[0]);
+    symbol.push(data[1].split(' / ')[1]);
+    this.arr2_Exchange_Result_Data.push([nation[i],exchange[i],symbol[i]]);
+}
+*/
+
+//다음 대륙 환율데이터를 담을 배열 초기화
+//this.arr1_Exchange_Data = [];(.,\'뉴스\')]'
+
+
+
+int변수 사용시
+'+변수+'
+ex) '//main[@id=\'container\']/div['+this.int_Category_Count+']'
+--------------------------------------------------------Xpath-------------------------------------------------------------------------------
+#list로 가져온 path
+'//div[1]/div/div/div/div/ul/li/button'
+
+#개발자모드로 확인한 Xpath
+//*[@id="mCSB_1_container"]/ul/li[1]/button/span[2] 1번영화
+//*[@id="mCSB_1_container"]/ul/li[2]/button/span[2] 2번영화
+
+list로 button까지 불러오기
+버튼 아래 span[1],i[1],span[2] 존재
+
+span[1] -> 관람등급
+i[1] -> 관심여부
+span[2] -> 영화제목
+
+영화제목만 불러오려면
+-> '//div[1]/div/div/div/div/ul/li/button/span[2]'
+
+#list로 가져온 path
+'//yt-chip-cloud-chip-renderer[3]/div[@id=\'chip-shape-container\']/chip-shape/button/div/yt-touch-feedback-shape/div[2]'
+'//yt-chip-cloud-chip-renderer[4]/div[@id=\'chip-shape-container\']/chip-shape/button/div/yt-touch-feedback-shape/div[2]'
+
+#개발자모드로 확인한 Xpath
+변경점이 안보임
+
+'동영상'이 yt-touch-feedback-shape보다 앞쪽에 위치
+
+yt-touch-feedback-shape뒤에 부터는 필요x
+
+'//yt-chip-cloud-chip-renderer[4]/div[@id=\'chip-shape-container\']/chip-shape/button/div/'
+contains사용
+->  '//yt-chip-cloud-chip-renderer/div[@id=\'chip-shape-container\']/chip-shape/button/div[contains(.,\'동영상\')]'
+
+
+
+# 변수사용하는법
+
+'+변수+'
+ex)
+div['+변수+']
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ChromegetMultipleElements -> 사용자지정규칙 1차원배열데이터 추출
+
+중단점 == debuger
+
+Bot.ProjectName 현재 프로젝트이름
+
+이벤트에서 예외처리
+
+----------------------------------------------------Array-------------------------------------------------------------------------------
+this.o_arry2_ResultData = new Array(); //새로운배열 생성
+
+this.arr_title = ToJson(this.arr_title);    //추출한데이터 ToJson처리
+this.arr_nspo = ToJson(this.arr_nspo);
+this.arr_url = ToJson(this.arr_url);
+
+for (i=0; i < this.arr_title.length; i++){          //새로운배열에 추출한데이터 삽입 (python append == java push)
+    this.o_arry2_ResultData.push([this.arr_title[i], this.arr_nspo[i], this.arr_url[i]]);
+}
+
+------------------------------------------------------------------------javascript-------------------------------------------------------------
+isNaN(변수)
+NaN이 아닐경우 False반환 
+변수가 숫자인지 판별 true false
+문자면 True >>> isNaN('123') >>> true
+숫자면 Falseis >>> isNaN(123) >>> false
+
+
+.join()
+join(';')
+배열의 각 요소들을 ';'을 기준으로 붙여서 한 문자열로 반환
+ex)
+list = ['C:\\RPA\\이달의_블로그_실습_강의\\(2025년 12월)_이달의블로그.xlsx', 'C:\\RPA\\이달의_블로그_실습_강의\\(2025년 9월~2025년 12월)_이달의블로그.xlsx']
+list.join(';')
+->'C:\\RPA\\이달의_블로그_실습_강의\\(2025년 12월)_이달의블로그.xlsx;C:\\RPA\\이달의_블로그_실습_강의\\(2025년 9월~2025년 12월)_이달의블로그.xlsx'
+
+Number(변수)
+숫자로 변환
+
+var 변수선언
+let 중복불가 변수선언
+const 중복불가 변수선언 재선언불가능
+
+parseInt(); int변환
+parseFloat(); float변환
+ToString(변수); string 변환
+
+pop
+// 배열의 마지막 추출
+array.pop()
+
+shift
+// 배열의 첫번째 추출
+array.shift()
+
+replace
+변수.replace('바꾸고싶은 문자','바뀔 문자');
+
+//()안의 0~9 숫자를 ''으로 replace
+.replace(/\([0-9]*\)/g,'')
+//위와 동일하나 (숫자)앞 공백도 제거 (/\(\)/,'')->(/ \(\)/,'')
+.replace(/ \([0-9]*\)/g,'')
+
+Global.str_FileName.replace('.','(결과).')
+
+if(this.arr1_SheetName.length == 1){
+    this.str_Result_FileName = '('
+                                + this.arr1_SheetName[0] 
+                                + ')_'
+                                + Global.str_FileName.replace('(Template)','');
+}else{
+    this.str_Result_FileName = '('
+                                + this.arr1_SheetName[0]
+                                + '~'
+                                + this.arr1_SheetName[(this.arr1_SheetName.length - 1)] 
+                                + ')_'
+                                + Global.str_FileName.replace('(Template)','');
+}
+
+filter
+변수.filter(e => e != 뺄문자)
+e는 배열의 각 요소들
+ex)
+this.arr_Stock.filter(e => e != '') -> 공백 제거
+// 데이터가공 공백제거 && 오늘날짜 필터링
+this.arr2_RawData = this.arr2_RawData.filter((e) => e[0] !='' && e[3] == DateTime.Now.ToString('yy.MM.dd'));
+
+split 
+array.split('기준')
+
+
+slice
+변수.slice(n,m) -> n번째부터 m번째 앞까지 나누기
+ex)
+this.arr_Stock.slice(0,12)
+
+DateTime.now.    -> 현재시간
+ex)
+DateTime.now.ToString('yyMMdd') -> 251218
+
+DateTime.Now.AddYears(-1).Year -> 현재시간 yyyyMMdd tt:mm:ss 에서 년도 -1 하고 yyyy 추출
+
+Directory.GetFiles('경로')
+경로 안에 파일리스트 읽어오기
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
